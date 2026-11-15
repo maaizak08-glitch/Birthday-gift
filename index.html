@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#7c3aed">
+  <title>Happy Birthday!</title>
+
+  <style>
+    :root {
+      color-scheme: light;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+        sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      min-height: 100vh;
+      min-height: 100svh;
+      margin: 0;
+      display: grid;
+      place-items: center;
+      overflow: hidden;
+      padding: 24px;
+      background:
+        radial-gradient(circle at 15% 15%, #fbcfe8 0, transparent 30%),
+        radial-gradient(circle at 85% 80%, #c4b5fd 0, transparent 32%),
+        linear-gradient(135deg, #fdf2f8, #ede9fe 55%, #dbeafe);
+      color: #312044;
+    }
+
+    .card {
+      position: relative;
+      z-index: 1;
+      width: min(100%, 520px);
+      padding: clamp(28px, 8vw, 54px);
+      text-align: center;
+      border: 1px solid rgb(255 255 255 / 75%);
+      border-radius: 30px;
+      background: rgb(255 255 255 / 78%);
+      box-shadow: 0 24px 70px rgb(76 29 149 / 18%);
+      backdrop-filter: blur(12px);
+      animation: appear 700ms ease-out both;
+    }
+
+    .cake {
+      margin-bottom: 12px;
+      font-size: clamp(64px, 18vw, 92px);
+      line-height: 1;
+      animation: bob 2.5s ease-in-out infinite;
+    }
+
+    .eyebrow {
+      margin: 0 0 10px;
+      color: #7c3aed;
+      font-size: 0.82rem;
+      font-weight: 800;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      margin: 0;
+      color: #5b21b6;
+      font-size: clamp(2.2rem, 10vw, 4rem);
+      line-height: 1.05;
+      letter-spacing: -0.05em;
+    }
+
+    .message {
+      max-width: 34ch;
+      margin: 20px auto 28px;
+      color: #594d68;
+      font-size: clamp(1rem, 4vw, 1.12rem);
+      line-height: 1.7;
+    }
+
+    .button {
+      min-height: 52px;
+      padding: 14px 24px;
+      border: 0;
+      border-radius: 999px;
+      background: linear-gradient(135deg, #8b5cf6, #ec4899);
+      box-shadow: 0 10px 24px rgb(139 92 246 / 28%);
+      color: white;
+      font: inherit;
+      font-weight: 750;
+      cursor: pointer;
+      transition: transform 160ms ease, box-shadow 160ms ease;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 14px 28px rgb(139 92 246 / 34%);
+    }
+
+    .button:active {
+      transform: translateY(1px) scale(0.98);
+    }
+
+    .button:focus-visible {
+      outline: 3px solid #312044;
+      outline-offset: 4px;
+    }
+
+    .note {
+      margin: 18px 0 0;
+      color: #8b7c99;
+      font-size: 0.82rem;
+    }
+
+    #confetti {
+      position: fixed;
+      inset: 0;
+      z-index: 2;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+    }
+
+    @keyframes appear {
+      from { opacity: 0; transform: translateY(18px) scale(0.98); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    @keyframes bob {
+      0%, 100% { transform: translateY(0) rotate(-3deg); }
+      50% { transform: translateY(-9px) rotate(3deg); }
+    }
+
+    @media (max-width: 380px) {
+      body { padding: 16px; }
+      .card { border-radius: 24px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        scroll-behavior: auto !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <main class="card">
+    <div class="cake" aria-hidden="true">🎂</div>
+    <p class="eyebrow">A special day for someone special</p>
+    <h1>Happy<br>Birthday!</h1>
+
+    <p class="message">
+      Wishing you a day filled with laughter, lovely surprises, and all the
+      little things that make you smile. May your year ahead be amazing!
+    </p>
+
+    <button class="button" id="celebrate" type="button">
+      Celebrate! 🎉
+    </button>
+    <p class="note">Hope your birthday is as wonderful as you are.</p>
+  </main>
+
+  <canvas id="confetti" aria-hidden="true"></canvas>
+
+  <script>
+    const canvas = document.getElementById("confetti");
+    const ctx = canvas.getContext("2d");
+    const button = document.getElementById("celebrate");
+    const colors = ["#f43f5e", "#f59e0b", "#22c55e", "#3b82f6", "#a855f7", "#ec4899"];
+    const particles = [];
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    function resizeCanvas() {
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      canvas.width = Math.round(window.innerWidth * dpr);
+      canvas.height = Math.round(window.innerHeight * dpr);
+      canvas.style.width = `${window.innerWidth}px`;
+      canvas.style.height = `${window.innerHeight}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    }
+
+    function celebrate(x = window.innerWidth / 2, y = window.innerHeight * 0.3) {
+      if (reducedMotion) return;
+
+      for (let i = 0; i < 150; i++) {
+        const angle = Math.random() * Math.PI * 2;
+        const speed = 3 + Math.random() * 8;
+
+        particles.push({
+          x,
+          y,
+          vx: Math.cos(angle) * speed,
+          vy: Math.sin(angle) * speed - 3,
+          size: 5 + Math.random() * 7,
+          color: colors[Math.floor(Math.random() * colors.length)],
+          rotation: Math.random() * Math.PI,
+          spin: (Math.random() - 0.5) * 0.25,
+          life: 100 + Math.random() * 50
+        });
+      }
+
+      animate();
+    }
+
+    let animationRunning = false;
+
+    function animate() {
+      if (animationRunning) return;
+      animationRunning = true;
+
+      function frame() {
+        ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
+
+        for (let i = particles.length - 1; i >= 0; i--) {
+          const p = particles[i];
+
+          p.x += p.vx;
+          p.y += p.vy;
+          p.vy += 0.13;
+          p.vx *= 0.99;
+          p.rotation += p.spin;
+          p.life -= 1;
+
+          ctx.save();
+          ctx.translate(p.x, p.y);
+          ctx.rotate(p.rotation);
+          ctx.fillStyle = p.color;
+          ctx.globalAlpha = Math.min(1, p.life / 25);
+          ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size * 0.65);
+          ctx.restore();
+
+          if (p.life <= 0 || p.y > window.innerHeight + 30) {
+            particles.splice(i, 1);
+          }
+        }
+
+        if (particles.length > 0) {
+          requestAnimationFrame(frame);
+        } else {
+          animationRunning = false;
+          ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
+        }
+      }
+
+      requestAnimationFrame(frame);
+    }
+
+    window.addEventListener("resize", resizeCanvas);
+    button.addEventListener("click", () => {
+      const rect = button.getBoundingClientRect();
+      celebrate(rect.left + rect.width / 2, rect.top + rect.height / 2);
+    });
+
+    resizeCanvas();
+    window.setTimeout(() => celebrate(), 500);
+  </script>
+</body>
+</html>
